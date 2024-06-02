@@ -1,0 +1,36 @@
+#nim
+nimcache/
+nimblecache/
+htmldocs/
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+*.apk
+*.wasm
+
+# Log files
+*.log
+
+# Build and res direcory
+build/
+.vscode/
+
+SDL2.dll
+SDL2_mixer.dll
