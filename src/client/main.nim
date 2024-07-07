@@ -5,6 +5,8 @@ import alasgar
 
 import config, logger
 
+import ../world/[Meshes]
+
 var
     WINDOW_WIDTH: int = 1280
     WINDOW_HEIGHT: int = 720
@@ -39,36 +41,28 @@ proc runClient*() =
     ## ideally make the scene objects dependent on a list of objects
     ## rather than adding them in line by line
     let 
-        # Creates a new scene
         scene = newScene()
-        # Creates camera entity
         cameraEntity = newEntity(scene, "Camera")
 
-    # Sets camera position
     scene.background = parseHex("ffffff")
 
-    # Sets the camera position
     cameraEntity.transform.position = vec3(5, 5, 5)
-    # Adds a perspective camera component to entity
+
     add(
         cameraEntity, 
         newPerspectiveCamera(
-            75, 
+            90, 
             runtime.ratio, 
             0.1, 
             100.0, 
             vec3(0) - cameraEntity.transform.position
         )
     )
-    # Makes the camera entity child of the scene
-    add(scene, cameraEntity)
 
-    # Creates the cube entity, by default position is 0, 0, 0
-    let cubeEntity = newEntity(scene, "Cube")
-    # Add a cube mesh component to entity
-    add(cubeEntity, newCubeMesh())
-    # Adds a script component to the cube entity
-    program(cubeEntity, proc(script: ScriptComponent) =
+    let playerEntity = newEntity(scene, "Player")
+    add(playerEntity, newPlayerMesh())
+
+    program(playerEntity, proc(script: ScriptComponent) =
         let t = 2 * runtime.age
         # Rotates the cube using euler angles
         script.transform.euler = vec3(
@@ -77,23 +71,18 @@ proc runClient*() =
             sin(t) * cos(t),
         )
     )
-    # Makes the cube enity child of the scene
-    add(scene, cubeEntity)
-    # Scale it up
-    cubeEntity.transform.scale = vec3(2)
 
-    # Creates the light entity
+    add(scene, playerEntity)
+    playerEntity.transform.scale = vec3(3)
+
     let lightEntity = newEntity(scene, "Light")
-    # Sets light position
     lightEntity.transform.position = vec3(4, 5, 4)
-    # Adds a point light component to entity
+
     add(
         lightEntity, 
         newPointLightComponent()
     )
-    # Makes the light entity child of the scene
     add(scene, lightEntity)
-    # Makes the camera entity child of the scene
     add(scene, cameraEntity)
 
     render(scene)
