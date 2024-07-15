@@ -5,12 +5,18 @@ import alasgar
 
 import config, logger
 
-import ../world/[Meshes]
+import ../world/[Meshes, Player]
 
 var
     WINDOW_WIDTH: int = 1280
     WINDOW_HEIGHT: int = 720
     WINDOW_FULLSCREEN: bool = false
+
+var 
+    W_pressed = false
+    S_pressed = false
+    A_pressed = false
+    D_pressed = false
 
 proc runClient*() =
     if not fileExists("config.json"):
@@ -45,9 +51,7 @@ proc runClient*() =
         cameraEntity = newEntity(scene, "Camera")
 
     scene.background = parseHex("ffffff")
-
     cameraEntity.transform.position = vec3(5, 5, 5)
-
     add(
         cameraEntity, 
         newPerspectiveCamera(
@@ -59,33 +63,76 @@ proc runClient*() =
         )
     )
 
-    let playerEntity = newEntity(scene, "Player")
-    add(playerEntity, newPlayerMesh())
-
-    program(playerEntity, proc(script: ScriptComponent) =
+    let player = newPlayer(scene, "Player")
+    let playerEntity = player.entity
+    playerEntity.material.castShadow = true
+    playerEntity.program(proc(script: ScriptComponent) =
         let t = 2 * runtime.age
-        # Rotates the cube using euler angles
         script.transform.euler = vec3(
             sin(t),
             cos(t),
             sin(t) * cos(t),
         )
     )
+    #[
+    playerEntity.program(
+        proc(script: ScriptComponent) =
+            if isKeyDown(KEY_W) and not W_pressed:
+                W_pressed = true
+                log("W pressed", "debug")
+            elif isKeyUp(KEY_W) and W_pressed:
+                W_pressed = false
+                log("W released", "debug")
+            
+            if isKeyDown(KEY_S) and not S_pressed:
+                S_pressed = true
+                log("S pressed", "debug")
+            elif isKeyUp(KEY_S) and S_pressed:
+                S_pressed = false
+                log("S released", "debug")
+            
+            if isKeyDown(KEY_A) and not A_pressed:
+                A_pressed = true
+                log("A pressed", "debug")
+            elif isKeyUp(KEY_A) and A_pressed:
+                A_pressed = false
+                log("A released", "debug")
+            
+            if isKeyDown(KEY_D) and not D_pressed:
+                D_pressed = true
+                log("D pressed", "debug")
+            elif isKeyUp(KEY_D) and D_pressed:
+                D_pressed = false
+                log("D released", "debug")
+    )]#
+    #playerEntity.transform.scale = vec3(3)
 
-    add(scene, playerEntity)
-    playerEntity.transform.scale = vec3(3)
+    let planeEntity = newEntity(scene, "Ground")
+    add(planeEntity, newPlaneMesh(1, 1))
+    add(scene, planeEntity)
 
+    planeEntity.transform.position = vec3(0, -3, 0)
+    planeEntity.transform.scale = vec3(200, 1, 200)
+    planeEntity.material.castShadow = false
+
+    # Creates the light entity
     let lightEntity = newEntity(scene, "Light")
-    lightEntity.transform.position = vec3(4, 5, 4)
-
     add(
         lightEntity, 
-        newPointLightComponent()
+        newDirectLightComponent(
+            direction=vec3(0) - vec3(-4, 5, 4),
+            shadow=true,
+        )
     )
+
+    add(scene, planeEntity)
     add(scene, lightEntity)
     add(scene, cameraEntity)
 
     render(scene)
+
+    # todo: add input system
+    #parseEvent(ptr currentEvent, vec2(WINDOW_WIDTH, WINDOW_HEIGHT), ptr currentInput)
     loop()
 
     
